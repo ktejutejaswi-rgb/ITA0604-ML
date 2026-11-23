@@ -1,0 +1,113 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyNZEXdCOYbKsY2+FHdbdR3y",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/bhavya0701585/Machine-Learning/blob/main/EXP4_ML.ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "3ZoVVVSiaUbh",
+        "outputId": "0dd8aaba-9f3e-4200-e232-3a2d28163e5c"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "XOR Predictions:\n",
+            "[0 0] -> 0.0297 Class: 0\n",
+            "[0 1] -> 0.96 Class: 1\n",
+            "[1 0] -> 0.9556 Class: 1\n",
+            "[1 1] -> 0.0512 Class: 0\n",
+            "\n",
+            "Final Mean Squared Error: 0.001769629861625904\n"
+          ]
+        }
+      ],
+      "source": [
+        "\n",
+        "import numpy as np\n",
+        "\n",
+        "np.random.seed(42)\n",
+        "\n",
+        "# XOR dataset\n",
+        "X = np.array([[0, 0],\n",
+        "              [0, 1],\n",
+        "              [1, 0],\n",
+        "              [1, 1]])\n",
+        "\n",
+        "Y = np.array([[0], [1], [1], [0]])\n",
+        "\n",
+        "# Initialize weights and biases\n",
+        "W1 = np.random.randn(2, 4)\n",
+        "b1 = np.zeros((1, 4))\n",
+        "W2 = np.random.randn(4, 1)\n",
+        "b2 = np.zeros((1, 1))\n",
+        "\n",
+        "learning_rate = 0.5\n",
+        "epochs = 10000\n",
+        "\n",
+        "def sigmoid(x):\n",
+        "    return 1 / (1 + np.exp(-np.clip(x, -500, 500)))\n",
+        "\n",
+        "# Train using backpropagation\n",
+        "for epoch in range(epochs):\n",
+        "    # Forward propagation\n",
+        "    H = sigmoid(np.dot(X, W1) + b1)\n",
+        "    output = sigmoid(np.dot(H, W2) + b2)\n",
+        "\n",
+        "    # Calculate error\n",
+        "    error = Y - output\n",
+        "\n",
+        "    # Backpropagation\n",
+        "    d_output = error * output * (1 - output)\n",
+        "    d_hidden = np.dot(d_output, W2.T) * H * (1 - H)\n",
+        "\n",
+        "    # Update weights and biases\n",
+        "    W2 += learning_rate * np.dot(H.T, d_output) / len(X)\n",
+        "    b2 += learning_rate * np.mean(d_output, axis=0, keepdims=True)\n",
+        "    W1 += learning_rate * np.dot(X.T, d_hidden) / len(X)\n",
+        "    b1 += learning_rate * np.mean(d_hidden, axis=0, keepdims=True)\n",
+        "\n",
+        "# Test the trained network\n",
+        "H = sigmoid(np.dot(X, W1) + b1)\n",
+        "output = sigmoid(np.dot(H, W2) + b2)\n",
+        "\n",
+        "print(\"XOR Predictions:\")\n",
+        "for i in range(len(X)):\n",
+        "    print(X[i], \"->\", round(output[i, 0], 4),\n",
+        "          \"Class:\", int(output[i, 0] >= 0.5))\n",
+        "\n",
+        "print(\"\\nFinal Mean Squared Error:\",\n",
+        "      np.mean((Y - output) ** 2))\n"
+      ]
+    }
+  ]
+}

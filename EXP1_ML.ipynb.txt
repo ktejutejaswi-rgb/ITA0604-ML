@@ -1,0 +1,74 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyOiHTR3h2gWX3EAkWttke4b",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/bhavya0701585/Machine-Learning/blob/main/EXP1_ML.ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "uz8NrQ3dn4O6",
+        "outputId": "a8b50e7a-4284-4e35-ebcb-12d2ba46b394"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Most Specific Hypothesis:\n",
+            "['Sunny', 'Warm', '?', 'Strong', '?', '?']\n"
+          ]
+        }
+      ],
+      "source": [
+        "import csv\n",
+        "\n",
+        "data = [\n",
+        "    ['Sunny', 'Warm', 'Normal', 'Strong', 'Warm', 'Same', 'Yes'],\n",
+        "    ['Sunny', 'Warm', 'High', 'Strong', 'Warm', 'Same', 'Yes'],\n",
+        "    ['Rainy', 'Cold', 'High', 'Strong', 'Warm', 'Change', 'No'],\n",
+        "    ['Sunny', 'Warm', 'High', 'Strong', 'Cool', 'Change', 'Yes']\n",
+        "]\n",
+        "\n",
+        "h = ['0'] * 6\n",
+        "\n",
+        "for row in data:\n",
+        "    if row[-1] == 'Yes':\n",
+        "        for i in range(6):\n",
+        "            if h[i] == '0':\n",
+        "                h[i] = row[i]\n",
+        "            elif h[i] != row[i]:\n",
+        "                h[i] = '?'\n",
+        "\n",
+        "print(\"Most Specific Hypothesis:\")\n",
+        "print(h)\n"
+      ]
+    }
+  ]
+}

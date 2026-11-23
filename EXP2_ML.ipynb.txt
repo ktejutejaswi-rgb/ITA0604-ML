@@ -1,0 +1,150 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyPvwB4nIITfk0+vg4E0easd",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/bhavya0701585/Machine-Learning/blob/main/EXP2_ML.ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 2,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ioQF6Z2lYcMx",
+        "outputId": "b23d0124-92b0-4456-ba25-45ec8af16518"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Training Data:\n",
+            "  Sky Temperature Humidity   Wind Water Forecast EnjoySport\n",
+            "Sunny        Warm   Normal Strong  Warm     Same        Yes\n",
+            "Sunny        Warm     High Strong  Warm     Same        Yes\n",
+            "Rainy        Cold     High Strong  Warm   Change         No\n",
+            "Sunny        Warm     High Strong  Cool   Change        Yes\n",
+            "\n",
+            "Specific Boundary (S):\n",
+            "('Sunny', 'Warm', '?', 'Strong', '?', '?')\n",
+            "\n",
+            "General Boundary (G):\n",
+            "('Sunny', '?', '?', '?', '?', '?')\n",
+            "('?', 'Warm', '?', '?', '?', '?')\n",
+            "\n",
+            "Number of consistent hypotheses: 6\n",
+            "All consistent hypotheses:\n",
+            "('Sunny', 'Warm', '?', 'Strong', '?', '?')\n",
+            "('Sunny', 'Warm', '?', '?', '?', '?')\n",
+            "('Sunny', '?', '?', 'Strong', '?', '?')\n",
+            "('Sunny', '?', '?', '?', '?', '?')\n",
+            "('?', 'Warm', '?', 'Strong', '?', '?')\n",
+            "('?', 'Warm', '?', '?', '?', '?')\n"
+          ]
+        }
+      ],
+      "source": [
+        "\n",
+        "import pandas as pd\n",
+        "from itertools import product\n",
+        "\n",
+        "# Create and save training data\n",
+        "data = [\n",
+        "    [\"Sunny\", \"Warm\", \"Normal\", \"Strong\", \"Warm\", \"Same\", \"Yes\"],\n",
+        "    [\"Sunny\", \"Warm\", \"High\", \"Strong\", \"Warm\", \"Same\", \"Yes\"],\n",
+        "    [\"Rainy\", \"Cold\", \"High\", \"Strong\", \"Warm\", \"Change\", \"No\"],\n",
+        "    [\"Sunny\", \"Warm\", \"High\", \"Strong\", \"Cool\", \"Change\", \"Yes\"]\n",
+        "]\n",
+        "\n",
+        "columns = [\"Sky\", \"Temperature\", \"Humidity\", \"Wind\",\n",
+        "           \"Water\", \"Forecast\", \"EnjoySport\"]\n",
+        "\n",
+        "df = pd.DataFrame(data, columns=columns)\n",
+        "df.to_csv(\"training_data.csv\", index=False)\n",
+        "\n",
+        "# Read CSV\n",
+        "df = pd.read_csv(\"training_data.csv\")\n",
+        "X = df.iloc[:, :-1].values.tolist()\n",
+        "y = df.iloc[:, -1].tolist()\n",
+        "\n",
+        "# Generate all hypotheses\n",
+        "domains = [df[col].unique().tolist() for col in columns[:-1]]\n",
+        "all_hypotheses = list(product(*[d + [\"?\"] for d in domains]))\n",
+        "\n",
+        "def matches(h, x):\n",
+        "    return all(a == \"?\" or a == b for a, b in zip(h, x))\n",
+        "\n",
+        "# Keep hypotheses consistent with every example\n",
+        "consistent = [\n",
+        "    h for h in all_hypotheses\n",
+        "    if all(matches(h, x) == (label == \"Yes\")\n",
+        "           for x, label in zip(X, y))\n",
+        "]\n",
+        "\n",
+        "def more_general(h1, h2):\n",
+        "    return all(a == \"?\" or a == b for a, b in zip(h1, h2))\n",
+        "\n",
+        "# Find maximally specific and maximally general boundaries\n",
+        "S = [\n",
+        "    h for h in consistent\n",
+        "    if not any(h != other and more_general(h, other)\n",
+        "               for other in consistent)\n",
+        "]\n",
+        "\n",
+        "G = [\n",
+        "    h for h in consistent\n",
+        "    if not any(h != other and more_general(other, h)\n",
+        "               for other in consistent)\n",
+        "]\n",
+        "\n",
+        "print(\"Training Data:\")\n",
+        "print(df.to_string(index=False))\n",
+        "\n",
+        "print(\"\\nSpecific Boundary (S):\")\n",
+        "for h in S:\n",
+        "    print(h)\n",
+        "\n",
+        "print(\"\\nGeneral Boundary (G):\")\n",
+        "for h in G:\n",
+        "    print(h)\n",
+        "\n",
+        "print(\"\\nNumber of consistent hypotheses:\", len(consistent))\n",
+        "print(\"All consistent hypotheses:\")\n",
+        "for h in consistent:\n",
+        "    print(h)\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "5R0WLGj2Yg57"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}

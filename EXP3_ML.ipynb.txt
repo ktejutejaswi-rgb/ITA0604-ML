@@ -1,0 +1,148 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyM5t9N3+PTMR/XuoILW/G5C",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/bhavya0701585/Machine-Learning/blob/main/EXP3_ML.ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {
+        "id": "kPWCoFVIZE7T",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "13cf121a-8c61-4b01-f0f8-599aa162450f"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Decision Tree:\n",
+            "{'Outlook': {'Sunny': {'Humidity': {'High': 'No', 'Normal': 'Yes'}}, 'Overcast': 'Yes', 'Rain': {'Wind': {'Weak': 'Yes', 'Strong': 'No'}}}}\n",
+            "\n",
+            "New Sample: {'Outlook': 'Sunny', 'Temperature': 'Cool', 'Humidity': 'High', 'Wind': 'Strong'}\n",
+            "Predicted Class: No\n"
+          ]
+        }
+      ],
+      "source": [
+        "\n",
+        "import pandas as pd\n",
+        "import math\n",
+        "from collections import Counter\n",
+        "\n",
+        "data = {\n",
+        "    \"Outlook\": [\"Sunny\", \"Sunny\", \"Overcast\", \"Rain\",\n",
+        "                \"Rain\", \"Rain\", \"Overcast\", \"Sunny\",\n",
+        "                \"Sunny\", \"Rain\", \"Sunny\", \"Overcast\",\n",
+        "                \"Overcast\", \"Rain\"],\n",
+        "    \"Temperature\": [\"Hot\", \"Hot\", \"Hot\", \"Mild\", \"Cool\",\n",
+        "                    \"Cool\", \"Cool\", \"Mild\", \"Cool\", \"Mild\",\n",
+        "                    \"Mild\", \"Mild\", \"Hot\", \"Mild\"],\n",
+        "    \"Humidity\": [\"High\", \"High\", \"High\", \"High\", \"Normal\",\n",
+        "                 \"Normal\", \"Normal\", \"High\", \"Normal\",\n",
+        "                 \"Normal\", \"Normal\", \"High\", \"Normal\", \"High\"],\n",
+        "    \"Wind\": [\"Weak\", \"Strong\", \"Weak\", \"Weak\", \"Weak\",\n",
+        "             \"Strong\", \"Strong\", \"Weak\", \"Weak\", \"Weak\",\n",
+        "             \"Strong\", \"Strong\", \"Weak\", \"Strong\"],\n",
+        "    \"Play\": [\"No\", \"No\", \"Yes\", \"Yes\", \"Yes\", \"No\",\n",
+        "             \"Yes\", \"No\", \"Yes\", \"Yes\", \"Yes\", \"Yes\",\n",
+        "             \"Yes\", \"No\"]\n",
+        "}\n",
+        "\n",
+        "df = pd.DataFrame(data)\n",
+        "\n",
+        "def entropy(labels):\n",
+        "    counts = Counter(labels)\n",
+        "    total = len(labels)\n",
+        "    return -sum((n / total) * math.log2(n / total)\n",
+        "                for n in counts.values())\n",
+        "\n",
+        "def information_gain(df, attribute, target):\n",
+        "    total_entropy = entropy(df[target])\n",
+        "    weighted_entropy = 0\n",
+        "\n",
+        "    for value in df[attribute].unique():\n",
+        "        subset = df[df[attribute] == value]\n",
+        "        weighted_entropy += (len(subset) / len(df)) * entropy(subset[target])\n",
+        "\n",
+        "    return total_entropy - weighted_entropy\n",
+        "\n",
+        "def id3(df, attributes, target):\n",
+        "    if len(df[target].unique()) == 1:\n",
+        "        return df[target].iloc[0]\n",
+        "\n",
+        "    if not attributes:\n",
+        "        return df[target].mode()[0]\n",
+        "\n",
+        "    best = max(attributes,\n",
+        "               key=lambda a: information_gain(df, a, target))\n",
+        "\n",
+        "    tree = {best: {}}\n",
+        "\n",
+        "    for value in df[best].unique():\n",
+        "        subset = df[df[best] == value]\n",
+        "\n",
+        "        if subset.empty:\n",
+        "            tree[best][value] = df[target].mode()[0]\n",
+        "        else:\n",
+        "            remaining = [a for a in attributes if a != best]\n",
+        "            tree[best][value] = id3(subset, remaining, target)\n",
+        "\n",
+        "    return tree\n",
+        "\n",
+        "def predict(tree, sample):\n",
+        "    if not isinstance(tree, dict):\n",
+        "        return tree\n",
+        "\n",
+        "    attribute = next(iter(tree))\n",
+        "    value = sample.get(attribute)\n",
+        "\n",
+        "    if value not in tree[attribute]:\n",
+        "        return \"Unknown\"\n",
+        "\n",
+        "    return predict(tree[attribute][value], sample)\n",
+        "\n",
+        "attributes = [\"Outlook\", \"Temperature\", \"Humidity\", \"Wind\"]\n",
+        "tree = id3(df, attributes, \"Play\")\n",
+        "\n",
+        "print(\"Decision Tree:\")\n",
+        "print(tree)\n",
+        "\n",
+        "sample = {\n",
+        "    \"Outlook\": \"Sunny\",\n",
+        "    \"Temperature\": \"Cool\",\n",
+        "    \"Humidity\": \"High\",\n",
+        "    \"Wind\": \"Strong\"\n",
+        "}\n",
+        "\n",
+        "print(\"\\nNew Sample:\", sample)\n",
+        "print(\"Predicted Class:\", predict(tree, sample))\n"
+      ]
+    }
+  ]
+}
